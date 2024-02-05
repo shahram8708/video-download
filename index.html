@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f3f3f3;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            font-family: 'Arial', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        .URL-input,
+        .convert-button {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 5px;
+            width: 80%;
+            box-sizing: border-box;
+            border: 2px solid #0485ff;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .URL-input:focus {
+            border: 2px solid #0366d6;
+        }
+
+        .convert-button {
+            background-color: #0485ff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .convert-button:hover {
+            background-color: #0366d6;
+        }
+
+        .progress-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .download-progress {
+            width: 80%;
+            margin-top: 10px;
+        }
+
+        .progress-text {
+            margin-top: 10px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        video {
+            width: 80%;
+            height: auto;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: auto;
+        }
+
+        .download-button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1.2em;
+            background-color: #0485ff;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            display: none;
+            margin: auto;
+        }
+
+        .download-button:hover {
+            background-color: #0366d6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>YouTube Downloader!</h1>
+        <input class="URL-input" placeholder="Video URL e.g. https://www.youtube.com/watch?v=MtN1YnoL46Q">
+        <button class="convert-button" onclick="convertVideo()">Convert</button>
+
+        <div class="progress-container" style="display: none;">
+            <progress class="download-progress" value="0" max="100"></progress>
+            <div class="progress-text">0%</div>
+        </div>
+
+        <video id="downloaded-video" controls style="display: none;"></video>
+
+        <button class="download-button" onclick="downloadVideo()">Download Video</button>
+    </div>
+
+    <script>
+        var convertBtn = document.querySelector('.convert-button');
+        var URLinput = document.querySelector('.URL-input');
+        var progressBarContainer = document.querySelector('.progress-container');
+        var progressBar = document.querySelector('.download-progress');
+        var progressText = document.querySelector('.progress-text');
+        var videoElement = document.getElementById('downloaded-video');
+        var downloadButton = document.querySelector('.download-button');
+
+        function convertVideo() {
+            console.log(`URL: ${URLinput.value}`);
+            progressBar.value = 0; 
+            progressText.textContent = '0%';
+            progressBarContainer.style.display = 'flex'; 
+            videoElement.style.display = 'none';
+            downloadButton.style.display = 'none';
+            sendURL(URLinput.value);
+        }
+
+        function sendURL(URL) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', `http://localhost:4000/download?URL=${URL}`);
+            xhr.responseType = 'blob';
+
+            xhr.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    var percentComplete = Math.round((event.loaded / event.total) * 100);
+                    progressBar.value = percentComplete;
+                    progressText.textContent = percentComplete + '%';
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    var blob = new Blob([xhr.response], { type: 'video/mp4' });
+                    var url = window.URL.createObjectURL(blob);
+
+                    videoElement.style.display = 'block';
+                    videoElement.src = url;
+
+                    downloadButton.style.display = 'block'; 
+                    progressBarContainer.style.display = 'none'; 
+                }
+            });
+
+            xhr.send();
+        }
+
+        function downloadVideo() {
+            var a = document.createElement('a');
+            a.href = videoElement.src;
+            a.download = 'video.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+
+</html>
