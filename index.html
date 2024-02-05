@@ -141,7 +141,7 @@
 
         function sendURL(URL) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', `http://localhost:4000/download?URL=${URL}`);
+            xhr.open('GET', `https://youtube-video-download-p6ap.onrender.com/download?URL=${URL}`);
             xhr.responseType = 'blob';
 
             xhr.addEventListener('progress', (event) => {
